@@ -49,7 +49,7 @@ check_distro etc/ncp.cfg || {
   exit 1;
 }
 
-
+touch /.ncp-image
 mkdir -p /usr/local/etc/ncp-config.d/
 cp etc/ncp-config.d/nc-nextcloud.cfg /usr/local/etc/ncp-config.d/
 cp etc/library.sh /usr/local/etc/
@@ -66,6 +66,7 @@ if [[ "$ncp_rc" == 5 ]]
 then
   /usr/local/bin/ncp-update "$BRANCH"
 fi
+run_app_unsafe post-inst.sh
 bash /usr/local/bin/ncp-provisioning.sh
 
 popd
