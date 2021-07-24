@@ -20,7 +20,7 @@
   [[ -f /.ncp-image ]] || cd "$TMPDIR"         # update locally during build
 
   echo -e "Performing updates"
-  ./update.sh || exit 1
+  ./update.sh || exit $?
 
   cd "$TMPDIR"
   VER=$( git describe --always --tags | grep -oP "v\d+\.\d+\.\d+" )
