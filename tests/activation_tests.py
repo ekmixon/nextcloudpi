@@ -56,10 +56,10 @@ class Test:
 
     def check(self, expression):
         if expression:
-            print(tc.green + "ok" + tc.normal)
+            print(f"{tc.green}ok{tc.normal}")
             self.log("ok")
         else:
-            print(tc.red + "error" + tc.normal)
+            print(f"{tc.red}error{tc.normal}")
             self.log("error")
             sys.exit(1)
 
@@ -154,19 +154,14 @@ if __name__ == "__main__":
         sys.exit(2)
 
     for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage()
-            sys.exit(2)
-        else:
-            usage()
-            sys.exit(2)
-
+        usage()
+        sys.exit(2)
     # test
 
     IP = args[0] if len(args) > 0 else 'localhost'
     nc_port = args[1] if len(args) > 1 else "443"
     admin_port = args[2] if len(args) > 2 else "4443"
-    print("Activation tests " + tc.yellow + IP + tc.normal)
+    print(f"Activation tests {tc.yellow}{IP}{tc.normal}")
     print("---------------------------")
     test_activation(IP, nc_port, admin_port)
 

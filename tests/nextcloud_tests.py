@@ -52,10 +52,10 @@ class Test:
 
     def check(self, expression):
         if expression:
-            print(tc.green + "ok" + tc.normal)
+            print(f"{tc.green}ok{tc.normal}")
             self.log("ok")
         else:
-            print(tc.red + "error" + tc.normal)
+            print(f"{tc.red}error{tc.normal}")
             self.log("error")
             sys.exit(1)
 
@@ -112,7 +112,7 @@ def test_nextcloud(IP, nc_port, driver):
         driver.get(f"https://{IP}:{nc_port}/index.php/settings/admin/overview")
     except:
         test.check(False)
-        print(tc.red + "error:" + tc.normal + " unable to reach " + tc.yellow + IP + tc.normal)
+        print(f"{tc.red}error:{tc.normal} unable to reach {tc.yellow}{IP}{tc.normal}")
         sys.exit(1)
     test.check("NextCloudPi" in driver.title)
     trusted_domain_str = "You are accessing the server from an untrusted domain"
@@ -149,14 +149,12 @@ def test_nextcloud(IP, nc_port, driver):
             for info in infos:
                 if re.match(r'.*Your installation has no default phone region set.*', info.text):
                     continue
-                else:
-
-                    php_modules = info.find_elements_by_css_selector("li")
-                    if len(php_modules) != 1:
-                        raise ConfigTestFailure(f"Could not find the list of php modules within the info message "
-                                                f"'{infos[0].text}'")
-                    if php_modules[0].text != "imagick":
-                        raise ConfigTestFailure("The list of php_modules does not equal [imagick]")
+                php_modules = info.find_elements_by_css_selector("li")
+                if len(php_modules) != 1:
+                    raise ConfigTestFailure(f"Could not find the list of php modules within the info message "
+                                            f"'{infos[0].text}'")
+                if php_modules[0].text != "imagick":
+                    raise ConfigTestFailure("The list of php_modules does not equal [imagick]")
 
         elif not element_ok.is_displayed():
             raise ConfigTestFailure("Neither the warnings nor the ok status is displayed "
@@ -181,16 +179,19 @@ if __name__ == "__main__":
         sys.exit(2)
 
     for opt, arg in opts:
-        if opt in ('-h', '--help'):
+        if (
+            opt not in ('-h', '--help')
+            and opt in ('-n', '--new')
+            and os.path.exists(test_cfg)
+        ):
+            os.unlink(test_cfg)
+        elif (
+            opt in ('-h', '--help')
+            or opt not in ('-n', '--new')
+            or os.path.exists(test_cfg)
+        ):
             usage()
             sys.exit(2)
-        elif opt in ('-n', '--new'):
-            if os.path.exists(test_cfg):
-                os.unlink(test_cfg)
-        else:
-            usage()
-            sys.exit(2)
-
     nc_user = False
     nc_pass = False
     config = configparser.ConfigParser()
@@ -205,7 +206,7 @@ if __name__ == "__main__":
     if not nc_user or not nc_pass:
         nc_user = input("Nextcloud username (empty=ncp): ")
         nc_user = "ncp" if nc_user == "" else nc_user
-        nc_pass = input("Nextcloud " + nc_user + " password (empty=ownyourbits): ")
+        nc_pass = input(f"Nextcloud {nc_user} password (empty=ownyourbits): ")
         nc_pass = "ownyourbits" if nc_pass == "" else nc_pass
         print("")
 
@@ -219,7 +220,7 @@ if __name__ == "__main__":
     # test
     IP = args[0] if len(args) > 0 else 'localhost'
     nc_port = args[1] if len(args) > 1 else "443"
-    print("Nextcloud tests " + tc.yellow + IP + tc.normal)
+    print(f"Nextcloud tests {tc.yellow}{IP}{tc.normal}")
     print("---------------------------")
 
     driver = webdriver.Firefox(service_log_path='/dev/null')

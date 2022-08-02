@@ -74,34 +74,34 @@ def usage():
 
 def is_running(process):
     "check that a process is running"
-    print("[running] " + tc.brown + "{:16}".format(process) + tc.normal, end=' ')
+    print(f"[running] {tc.brown}" + "{:16}".format(process) + tc.normal, end=' ')
     result = run(pre_cmd + ['pgrep', '-cf', process], stdout=PIPE, stderr=PIPE)
     if result.returncode == 0:
-        print(tc.green + "ok" + tc.normal)
+        print(f"{tc.green}ok{tc.normal}")
     else:
-        print(tc.red + "error" + tc.normal)
+        print(f"{tc.red}error{tc.normal}")
     return result.returncode == 0
 
 
 def file_exists(file):
     "check that a file exists"
-    print("[exists ] " + tc.brown + "{:16}".format(file) + tc.normal, end=' ')
+    print(f"[exists ] {tc.brown}" + "{:16}".format(file) + tc.normal, end=' ')
     result = run(pre_cmd + ['test', '-f', file], stdout=PIPE, stderr=PIPE)
     if result.returncode == 0:
-        print(tc.green + "ok" + tc.normal)
+        print(f"{tc.green}ok{tc.normal}")
     else:
-        print(tc.red + "error" + tc.normal)
+        print(f"{tc.red}error{tc.normal}")
     return result.returncode == 0
 
 
 def file_not_exists(file):
     "check that a file doesn't exist"
-    print("[nexists] " + tc.brown + "{:16}".format(file) + tc.normal, end=' ')
+    print(f"[nexists] {tc.brown}" + "{:16}".format(file) + tc.normal, end=' ')
     result = run(pre_cmd + ['test', '-f', file], stdout=PIPE, stderr=PIPE)
     if result.returncode != 0:
-        print(tc.green + "ok" + tc.normal)
+        print(f"{tc.green}ok{tc.normal}")
     else:
-        print(tc.red + "error" + tc.normal)
+        print(f"{tc.red}error{tc.normal}")
     return result.returncode == 0
 
 
@@ -116,12 +116,12 @@ def check_processes_running(processes):
 
 def is_installed(binary):
     "check that a binary is installed"
-    print("[install] " + tc.brown + "{:16}".format(binary) + tc.normal, end=' ')
+    print(f"[install] {tc.brown}" + "{:16}".format(binary) + tc.normal, end=' ')
     result = run(pre_cmd + ['sudo', 'which', binary], stdout=PIPE, stderr=PIPE)
     if result.returncode == 0:
-        print(tc.green + "ok" + tc.normal)
+        print(f"{tc.green}ok{tc.normal}")
     else:
-        print(tc.red + "error" + tc.normal)
+        print(f"{tc.red}error{tc.normal}")
     return result.returncode == 0
 
 
@@ -168,20 +168,18 @@ if __name__ == "__main__":
         sys.exit(2)
 
     for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            usage()
-            sys.exit(2)
-        else:
-            usage()
-            sys.exit(2)
-
+        usage()
+        sys.exit(2)
     # parse arguments
     ssh_cmd = "ssh root@nextcloudpi.local"
     if len(args) > 0:
         if '@' in args[0]:
-            ssh_cmd = "ssh " + args[0]
+            ssh_cmd = f"ssh {args[0]}"
         else:
-            print(tc.brown + "* Ignoring invalid SSH argument " + tc.yellow + args[0] + tc.normal)
+            print(
+                f"{tc.brown}* Ignoring invalid SSH argument {tc.yellow}{args[0]}{tc.normal}"
+            )
+
             args = []
 
     # detect if we are running this in a NCP instance
@@ -192,20 +190,32 @@ if __name__ == "__main__":
 
     # local method
     if os.path.exists('/usr/local/etc/ncp-baseimage'):
-        print(tc.brown + "* local NCP instance detected" + tc.normal)
+        print(f"{tc.brown}* local NCP instance detected{tc.normal}")
         binaries_must_be_installed = binaries_must_be_installed + binaries_no_docker
         pre_cmd = []
 
-    # docker method
     elif 'ownyourbits/nextcloudpi-' in dockers_running:
-        print( tc.brown + "* local NCP docker instance detected" + tc.normal)
+        print(f"{tc.brown}* local NCP docker instance detected{tc.normal}")
         pre_cmd = ['docker', 'exec', '-ti', 'nextcloudpi']
 
-    # SSH method
     else:
         if len(args) == 0:
-            print( tc.brown + "* No local NCP instance detected, trying SSH with " +
-               tc.yellow + ssh_cmd + tc.normal + "...")
+            print(
+                (
+                    (
+                        (
+                            (
+                                f"{tc.brown}* No local NCP instance detected, trying SSH with "
+                                + tc.yellow
+                            )
+                            + ssh_cmd
+                        )
+                        + tc.normal
+                    )
+                    + "..."
+                )
+            )
+
         binaries_must_be_installed = binaries_must_be_installed + binaries_no_docker
         pre_cmd = ['ssh', '-o UserKnownHostsFile=/dev/null' , '-o PasswordAuthentication=no',
                 '-o StrictHostKeyChecking=no', '-o ConnectTimeout=1', ssh_cmd[4:]]
@@ -214,14 +224,14 @@ if __name__ == "__main__":
         ip = ssh_cmd[at_char+1:]
         ping_cmd = run(['ping', '-c1', '-w1', ip], stdout=PIPE, stderr=PIPE)
         if ping_cmd.returncode != 0:
-            print(tc.red + "No connectivity to " + tc.yellow + ip + tc.normal)
+            print(f"{tc.red}No connectivity to {tc.yellow}{ip}{tc.normal}")
             sys.exit(1)
 
         ssh_test = run(pre_cmd + [':'], stdout=PIPE, stderr=PIPE)
         if ssh_test.returncode != 0:
             ssh_copy = run(['ssh-copy-id', ssh_cmd[4:]], stderr=PIPE)
             if ssh_copy.returncode != 0:
-                print(tc.red + "SSH connection failed" + tc.normal)
+                print(f"{tc.red}SSH connection failed{tc.normal}")
                 sys.exit(1)
 
     # checks
